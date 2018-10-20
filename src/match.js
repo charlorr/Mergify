@@ -1,6 +1,4 @@
 async function test(){
-  //let json1 = [{"name":"test1"}, {"name":"test1"}, {"name":"test1"}, {"name":"test2"}];
-  //let json2 = [{"name":"test2"}, {"name":"test3"}, {"name":"test3"}, {"name":"test3"}];
   let json1 = JSON.parse('[{"name":"test1"}, {"name":"test2"}, {"name":"test3"}, {"name":"test4"}, {"name":"test5"}]');
   let json2 = JSON.parse('[{"name":"test2"}, {"name":"test3"}, {"name":"test3"}, {"name":"test3"}, {"name":"test1"}, {"name":"test2"}, {"name":"test2"}, {"name":"test2"}, {"name":"test3"}]');
 
@@ -13,19 +11,29 @@ async function test(){
   console.log(match);
 }
 
-async function parsePlaylists(json) {
-  let playlists = [];
-  for(let i in json){
-    playlists.push(json[i]);
+/*
+  Returns list of hrefs from a list of playlists
+*/
+async function parsePlaylistsHref(json) {
+  let parsedJson = JSON.parse(json);
+  let trackList = [];
+  for(let i in parsedJson){
+    trackList.push(parsedJson[i].tracks);
   }
 
-  return playlists;
+  return trackList;
 }
 
+/*
+  Sorting function for parseTracks
+*/
 function SortByName(x,y) {
   return ((x.name == y.name) ? 0 : ((x.name > y.name) ? 1 : -1 ));
 }
 
+/*
+  Returns list of tracks without repeats and sorted
+*/
 async function parseTracks(tracks) {
   return new Promise(resolve => {
     let clone = tracks.slice(0);
@@ -45,6 +53,9 @@ async function parseTracks(tracks) {
 
 }
 
+/*
+  Returns list of tracks that exist in both track lists
+*/
 async function matchTracks(t1, t2) {
   return new Promise(resolve => {
     let match = [];
@@ -58,5 +69,3 @@ async function matchTracks(t1, t2) {
     resolve(match);
   });
 }
-
-test();
