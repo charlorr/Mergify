@@ -1,16 +1,14 @@
 import React, { Component } from 'react';
 import {Link} from 'react-router-dom';
 import cookie from 'react-cookie';
+import axios from 'axios';
 
 import './CSS/Main.css';
 
-const qs = require('query-string');
+let qs = require('query-string');
+
 
 class Main extends Component {
-
-  state = {
-    response: ''
-  }
 
   // callApi = async () => {
   //   const response = await fetch('/login');
@@ -26,6 +24,7 @@ class Main extends Component {
   constructor() {
       super();
 
+      this.state= {};
       this.login = this.login.bind(this);
   }
 
@@ -38,8 +37,16 @@ class Main extends Component {
     let scope = 'user-read-private user-read-email';
     let state = Math.random().toString(32).substr(2);
     let yoooo = `https://accounts.spotify.com/authorize?response_type=code&` +
-                           `client_id=${client_id}&scope=${scope}&redirect_uri=${encodeURIComponent(redirect_uri)}&state=${state}`;
-    this.setState({id: client_id, secret: client_secret, scope: scope, uri: encodeURIComponent(redirect_uri) });
+                `client_id=${client_id}&scope=${scope}&redirect_uri=`
+                + `${encodeURIComponent(redirect_uri)}&state=${state}`;
+
+    let info = {
+      'client_id': client_id,
+      'client_secret': client_secret,
+      'redirect_uri': encodeURIComponent(redirect_uri),
+    }
+
+    localStorage.setItem('data', JSON.stringify(info));
     console.log(yoooo);
     window.location.href = yoooo;
 
@@ -47,22 +54,67 @@ class Main extends Component {
 
   render() {
 
-    console.log(this.props);
-    if(this.props.location.search != "")
-    {
-      var code = qs.parse(this.props.location.search, { ignoreQueryPrefix: true }).code;
-      var state = qs.parse(this.props.location.search, { ignoreQueryPrefix: true }).state;
+    console.log(this.props.location.search);
+    console.log(this.state.id);
+    if(this.props.location.search != "") {
+      let data = JSON.parse(localStorage.getItem('data'));
+      let code = qs.parse(this.props.location.search, { ignoreQueryPrefix: true }).code;
+      let state = qs.parse(this.props.location.search, { ignoreQueryPrefix: true }).state;
+      console.log(encodeURIComponent(code));
 
       let yoooo = 'https://accounts.spotify.com/api/token';
-      fetch(yoooo, {
+      // fetch(yoooo)
+      //   .then(results => {
+      //     this.setState({id: this.state.client_id, secret: this.state.client_secret,
+      //       scope: this.state.scope, uri: this.state.uri, results: results})
+      //   })
+      //   .then(console.log(this.state.results));
+      console.log("code: " + code + "\nredirect_uri: " + data.redirect_uri + "\nAuth: " + new Buffer(data.client_id + ':' + data.client_secret).toString('base64'));
+      let authval = new Buffer(data.client_id + ':' + data.client_secret).toString('base64');
+      var authOptions = {
+        url: 'https://accounts.spotify.com/api/token',
         method: 'post',
-        headers: {'Authorization': 'Basic ' + (new Buffer(this.state.id + ':' + this.state.secret).toString('base64')) },
-        body: {
-          code: code,
-          redirect_uri: this.state.uri,
+        params: {
+          code: encodeURIComponent(code),
+          redirect_uri: data.redirect_uri,
           grant_type: 'authorization_code'
+        },
+        headers: {
+          'Content-Type': "application/x-www-form-urlencoded",
+          'Accept': "application/json"
+        },
+        auth: {
+          username: data.client_id,
+          password: data.client_secret
         }
-      })
+      };
+      let yooo = 'https://accounts.spotify.com/api/token?grant_type=authorization_code&code=' + code + "&redirect_uri=" + data.redirect_uri;
+
+      fetch(yooo, {
+        method: 'post',
+        headers: {
+          'Authorization': 'Basic ' + authval,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        params: {
+          'grant_type': 'authorization_code',
+          'code': code,
+          'redirect_uri': data.redirect_uri
+        }
+      }).then(response => response.text())
+  .then((body) => {
+    //.console.log(body);
+    localStorage.setItem('access_token', JSON.stringify(JSON.parse(body).access_token))
+    localStorage.setItem('refresh_token', JSON.stringify(JSON.parse(body).refresh_token))
+    window.location.href = '/#'
+  });
+      // axios(authOptions)
+      //       .then(token => {
+      //         console.log(token);
+      //       })
+      //console.log(data);
+      //console.log(new Buffer(data.client_id + ':' + data.client_secret).toString('base64'));
+
       //window.location.href = yoooo;
     }
     return (
@@ -82,7 +134,6 @@ class Main extends Component {
               Login With Spotify
             </button>
         </div>
-        <p>{this.state.response}</p>
       </div>
     );
   }
