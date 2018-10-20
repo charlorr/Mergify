@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
+import {Link} from 'react-router-dom';
 
 import './CSS/Main.css';
 
 class Main extends Component {
   constructor() {
       super();
+
       this.login = this.login.bind(this);
   }
 
@@ -26,9 +28,11 @@ class Main extends Component {
           <br /><br /><br /><br />
         </body>
         <div className='buttonArea'>
-          <button className='button' style={{background:'#ff9507'}} onClick={this.login}>
-            Login With Spotify
-          </button>
+          <Link to='/login'>
+            <button className='button' style={{background:'#ff9507'}} onClick={this.login}>
+              Login With Spotify
+            </button>
+          </Link>
         </div>
       </div>
     );
