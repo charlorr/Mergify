@@ -8,11 +8,12 @@ async function getCommonTracks(){
     console.log(JSON.stringify(myJson));
   });
 
-  let ids = parsePlaylistsHref(playlists);
+  playlists = JSON.parse(playlists);
+  let ids = await parsePlaylistsTracks (playlists);
   //https://developer.spotify.com/documentation/web-api/reference/playlists/get-playlists-tracks/
   //GET https://api.spotify.com/v1/playlists/{playlist_id}/tracks
   let totalTracks = [];
-  for(i in ids){
+  for(var i in ids){
     let playlistTracks = fetch('https://api.spotify.com/v1/me/playlists')
     .then(function(response) {
       return response.json();
@@ -21,7 +22,8 @@ async function getCommonTracks(){
       console.log(JSON.stringify(myJson));
     });
 
-    totalTracks.push(playlistTracks.items);
+    for(var j in playListTrack.items)
+      totalTracks.push(playListTrack.items[j]);
   }
 
   let ret = await parseTracks(totalTracks);
