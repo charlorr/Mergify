@@ -106,7 +106,7 @@ class Main extends Component {
     //.console.log(body);
     localStorage.setItem('access_token', JSON.stringify(JSON.parse(body).access_token))
     localStorage.setItem('refresh_token', JSON.stringify(JSON.parse(body).refresh_token))
-    window.location.href = '/#'
+    window.location.href = '/merge'
   });
       // axios(authOptions)
       //       .then(token => {
